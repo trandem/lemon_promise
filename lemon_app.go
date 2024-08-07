@@ -1,29 +1,29 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"lemon_promise/lemon_promise"
 )
 
 func main() {
-	cP := &lemon_promise.CompletePromise{}
-	x1 := &lemon_promise.CompletePromise{}
+	c := lemon_promise.NewCompletablePromise()
 
-	x := cP.Then(func(r any) lemon_promise.Promise {
-		return x1
-	})
+	lemon_promise.NewSimplePromise("444").
+		Then(func(r any) lemon_promise.Promise {
+			return c
+		}).
+		Then(func(r any) lemon_promise.Promise {
+			return lemon_promise.NewSimplePromise(r)
+		}).
+		Done(func(r any) {
+			fmt.Println("done")
+			fmt.Println(r)
+		}).
+		Fail(func(e error) {
+			fmt.Println("fail")
+			fmt.Println(e)
+		})
 
-	x2 := x.Then(func(r any) lemon_promise.Promise {
-		fmt.Printf("lolol %+v\n", r)
-		return lemon_promise.NewSimpleDonePromise(r)
-	})
-
-	cP.PromiseDone("abc")
-	fmt.Printf("%+v\n", cP.Get())
-	fmt.Printf("%+v\n", x.Get())
-	x1.PromiseDone("444")
-	fmt.Printf("%+v\n", x.Get())
-	fmt.Printf("%+v\n", x2.Get())
-	// https://github.com/dungba88/promise4j
-	// survey full flow and write flow code
+	c.Reject(errors.New("tet"))
 }
